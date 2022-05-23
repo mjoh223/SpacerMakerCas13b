@@ -43,7 +43,8 @@ def parseGenbank(filename):
                 transcripts.append(Transcript(mrna, feature.location))
     return transcripts
 
-def findProtospacers(transcripts):
+def findProtospacers(transcripts, run_name):
+    f = open('{}.csv'.format(run_name), "r")
     for mrna in transcripts:
         windows = [(mrna.seq[i:i+34],i) for i in range(len(mrna.seq)-33)] #filter to abide by both rules
         protospacers = list(filter(lambda x: PFSRules(x[0]), windows))
@@ -52,16 +53,19 @@ def findProtospacers(transcripts):
         final = list(zip(results,protospacers))
         a = sorted(final, key=lambda x: float(x[0][0]), reverse=True)
         for i in a:
-            print('{}, {}, {}, {}'.format(i[0][0], i[0][1], i[1][0].back_transcribe(), i[1][1]))
+            f.write('{}, {}, {}, {}'.format(i[0][0], i[0][1], i[1][0].back_transcribe(), i[1][1]))
+    f.close()
+    return '{}.csv'.format(run_name)
 
 class Transcript:
     def __init__(self, seq, location):
         self.seq = seq
         self.location = location
 
-filename = 'JBD30.gb'
-transcripts = parseGenbank(filename)
-findProtospacers(transcripts)
+def execute(input_genbank, run_name):
+    #input_genbank is file location
+    transcripts = parseGenbank(input_genbank)
+    findProtospacers(transcripts, run_name)
 #for mrna in transcripts:
 #    runRNAplfold(str(mrna.seq))
 #seq = 'AUGAUGAUGAGUAGGAUAUGAAGCUAGACAUAA'
